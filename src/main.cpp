@@ -42,7 +42,6 @@ int main(int argc, char **argv)
 {
 	g_synthesizer = new Synthesizer();
 	
-
 	if ((client = jack_client_open("synthwave", JackNullOption, NULL)) == 0) {
 		std::cerr << "JACK server not running";
 	}
@@ -56,19 +55,24 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	
-	const char **available_midi_ports =  jack_get_ports(client, NULL, JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput|JackPortIsPhysical|JackPortIsTerminal);
+	const char **available_midi_ports = jack_get_ports(
+		client, NULL, JACK_DEFAULT_MIDI_TYPE,
+		JackPortIsOutput|JackPortIsPhysical|JackPortIsTerminal);
+	
 	for (int i = 0; available_midi_ports[i] != NULL; i++) {
 		std::cout << available_midi_ports[i] <<std::endl;
 	}
 	jack_connect(client, available_midi_ports[1], jack_port_name(midi_in));
 	
-	const char **available_audio_ports = jack_get_ports(client, NULL, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput|JackPortIsPhysical|JackPortIsTerminal);
+	const char **available_audio_ports = jack_get_ports(
+		client, NULL, JACK_DEFAULT_AUDIO_TYPE,
+		JackPortIsInput|JackPortIsPhysical|JackPortIsTerminal);
+	
 	for (int i = 0; available_audio_ports[i] != NULL; i++) {
 		std::cout << available_audio_ports[i] <<std::endl;
 	}
 	jack_connect(client, jack_port_name(audio_out), available_audio_ports[0]);
 	jack_connect(client, jack_port_name(audio_out), available_audio_ports[1]);
-	
 	
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
