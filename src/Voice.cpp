@@ -4,9 +4,10 @@
 #include <iostream>
 
 
-Voice::Voice(double frequency, jack_nframes_t sample_rate) : phase(0), frequency(frequency)
+Voice::Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
+	: phase(0), frequency(frequency), wavetable(wavetable)
 {
-	ramp_step = 2 * frequency / sample_rate;
+	ramp_step = frequency / sample_rate;
 	std::cout << frequency << "\t" <<ramp_step << std::endl;
 }
 
@@ -22,9 +23,10 @@ Voice::Voice(double frequency, jack_nframes_t sample_rate) : phase(0), frequency
 void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 {
 	for (int i = 0; i < nframes; i++) {
-		buffer[i] += 0.2*sin(M_PI * phase);
+		//buffer[i] += 0.2*sin(M_PI * phase);
+		buffer[i] += 0.2 * wavetable.returnSample(frequency, phase);
 		phase += ramp_step;
-		phase = (phase > 1.0) ? phase - 2.0 : phase;
+		phase = (phase > 1.0) ? phase - 1.0 : phase;
 	}
 }
 

@@ -1,6 +1,5 @@
 #include <iostream>
-#include <signal.h>
-#include <cmath>
+#include <csignal>
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -25,7 +24,7 @@ int process(jack_nframes_t nframes, void *arg)
 	jack_midi_event_t midi_event_in;
 	jack_nframes_t event_count = jack_midi_get_event_count(midi_in_buf);
 	std::vector<jack_midi_event_t> midiEventsList;
-	jack_default_audio_sample_t *buffer = (jack_default_audio_sample_t *) jack_port_get_buffer (audio_out, nframes);
+	auto *buffer = (jack_default_audio_sample_t *) jack_port_get_buffer (audio_out, nframes);
 	for (int i = 0; i < event_count; i++) {
 		jack_midi_event_get(&midi_event_in, midi_in_buf, i);
 		if (((*(midi_event_in.buffer) & 0xf0) == 0x90) || ((*(midi_event_in.buffer) & 0xf0) == 0x80)) {
@@ -38,14 +37,14 @@ int process(jack_nframes_t nframes, void *arg)
 	return 0;
 }
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
 	g_synthesizer = new Synthesizer();
 	
-	if ((client = jack_client_open("synthwave", JackNullOption, NULL)) == 0) {
+	if ((client = jack_client_open("synthwave", JackNullOption, nullptr)) == nullptr) {
 		std::cerr << "JACK server not running";
 	}
-	jack_set_process_callback(client, process, 0);
+	jack_set_process_callback(client, process, nullptr);
 	
 	midi_in = jack_port_register(client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 	audio_out = jack_port_register(client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
@@ -56,19 +55,19 @@ int main(int argc, char **argv)
 	}
 	
 	const char **available_midi_ports = jack_get_ports(
-		client, NULL, JACK_DEFAULT_MIDI_TYPE,
+		client, nullptr, JACK_DEFAULT_MIDI_TYPE,
 		JackPortIsOutput|JackPortIsPhysical|JackPortIsTerminal);
 	
-	for (int i = 0; available_midi_ports[i] != NULL; i++) {
+	for (int i = 0; available_midi_ports[i] != nullptr; i++) {
 		std::cout << available_midi_ports[i] <<std::endl;
 	}
 	jack_connect(client, available_midi_ports[1], jack_port_name(midi_in));
 	
 	const char **available_audio_ports = jack_get_ports(
-		client, NULL, JACK_DEFAULT_AUDIO_TYPE,
+		client, nullptr, JACK_DEFAULT_AUDIO_TYPE,
 		JackPortIsInput|JackPortIsPhysical|JackPortIsTerminal);
 	
-	for (int i = 0; available_audio_ports[i] != NULL; i++) {
+	for (int i = 0; available_audio_ports[i] != nullptr; i++) {
 		std::cout << available_audio_ports[i] <<std::endl;
 	}
 	jack_connect(client, jack_port_name(audio_out), available_audio_ports[0]);
@@ -79,7 +78,6 @@ int main(int argc, char **argv)
 	
 	while (1) {
 	}
-	return 0;
 }
 
 

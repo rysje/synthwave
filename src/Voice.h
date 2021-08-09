@@ -1,16 +1,17 @@
 #pragma once
 
 #include <jack/types.h>
+#include "Wavetable.h"
 
 class Voice
 {
 public:
-	Voice(double frequency, jack_nframes_t sample_rate);
+	Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable);
 	//void Process(jack_default_audio_sample_t *buffer, jack_nframes_t start_sample, jack_nframes_t end_sample, jack_nframes_t nframes);
 	void Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes);
 private:
 	double phase;
 	jack_default_audio_sample_t ramp_step;
-	double frequency;	
-
+	double frequency;
+	Wavetable &wavetable;
 };

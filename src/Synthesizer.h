@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Voice.h"
+#include "Wavetable.h"
 
 class Synthesizer
 {
@@ -19,4 +20,5 @@ private:
 	std::vector<Voice*> voices;
 	std::vector<bool> isActive;
 	std::vector<jack_nframes_t> time;
+	Wavetable wavetable;
 };

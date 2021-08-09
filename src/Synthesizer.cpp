@@ -1,14 +1,16 @@
 #include "Synthesizer.h"
+
 #include <cmath>
 #include <iostream>
 
 Synthesizer::Synthesizer()
 {
+	wavetable.init("saw.synthwave");
 	voices.reserve(128);
 	isActive.reserve(128);
 	time.reserve(128);
 	for (int i = 0; i < 128; i++) {
-		voices.emplace_back(new Voice((2.0 * 440.0 / 32.0) * pow(2, (((double)i - 9.0) / 12.0)), 48000));
+		voices.emplace_back(new Voice((440.0 / 32.0) * pow(2, (((double)i - 9.0) / 12.0)), 48000, wavetable));
 		isActive.emplace_back(false);
 		time.emplace_back(0);
 	}
@@ -44,20 +46,11 @@ int Synthesizer::Process(jack_default_audio_sample_t *buffer, jack_nframes_t nfr
 // 			} // else inactive
 // 		}
 // 	}
-
-	for (int i = 0; i < nframes; i++) {
+	for (int i = 0; i < 128; i++) {
 		if (isActive[i]) {
 			voices[i]->Process(buffer, nframes);
 		}
 	}
-	
-// 	for(int i=0; i<nframes; i++ )
-// 	{
-// 		buffer[i] = sine[phahase];
-// 		phahase++;
-// 		if( phahase >= TABLE_SIZE ) phahase -= TABLE_SIZE;
-// 	}
-	
 	return 0;
 }
 
