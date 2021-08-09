@@ -28,7 +28,9 @@ double Wavetable::returnSample(double frequency, double phase)
 	if (frequency < tables[tableIndex].lowFrequency) {
 		return 0.0;
 	}
-	for (tableIndex; tables[tableIndex].highFrequency > frequency; tableIndex++) {}
+	while (tables[tableIndex].highFrequency < frequency) {
+		tableIndex++;
+	}
 	// TODO: make sure phase is in the range <0; 1>
 	double sampleNumber = phase * tables[tableIndex].samples.size();
 	int lowerSampleNumber = static_cast<int>(floor(sampleNumber));
