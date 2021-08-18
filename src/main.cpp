@@ -30,6 +30,10 @@ int process(jack_nframes_t nframes, void *arg)
 		if (((*(midi_event_in.buffer) & 0xf0) == 0x90) || ((*(midi_event_in.buffer) & 0xf0) == 0x80)) {
 			midiEventsList.push_back(midi_event_in);
 		}
+		// TODO: sustain, pitch bend and other MIDI messages here
+//		if (((*(midi_event_in.buffer) & 0xf0) == 0xB0) && (*(midi_event_in.buffer + 1) == 0x40)) {
+//
+//		}
 	}
 	g_synthesizer->setMIDINoteEvents(midiEventsList);
 	g_synthesizer->Process(buffer, nframes);
