@@ -20,18 +20,22 @@ public:
 	bool isActiveInCurrentBuffer();
 	void on(jack_nframes_t time);
 	void off(jack_nframes_t time);
+	static void setFrequencyModulation(jack_nframes_t time, double value);
+
+	inline static jack_nframes_t controlBufferSize = 64;
+	inline static jack_nframes_t controlBuffersPerAudioBuffer = 4;
+	inline static int attackLen;
+	inline static int decayLen;
+	inline static int sustainLev;
+	inline static int releaseLen;
+	inline static std::vector<double> freqMod;
 private:
-	jack_nframes_t controlBufferSize;
-	jack_nframes_t controlBuffersPerAudioBuffer;
-	static int attackLen;
-	static int decayLen;
-	static int sustainLev;
-	static int releaseLen;
 	std::vector<VoiceState> state;
 	bool noteOn;
 	bool sustainPedalOn;
 	double phase;
 	jack_default_audio_sample_t ramp_step;
-	double frequency;
+	double baseFrequency;
 	Wavetable &wavetable;
+	jack_nframes_t sampleRate;
 };

@@ -10,10 +10,8 @@ class Synthesizer
 {
 public:
 	Synthesizer();
-	void setMIDINoteEvents(const std::vector< jack_midi_event_t > &midiEventsList);
-	/* probably std::vector<jack_midi_data_t> as an argument to both methods,
-	 * as we may need to define more than one value per buffer
-	void setPitchWheelValues();*/
+	void setMIDINoteEvents(const std::vector<jack_midi_event_t> &midiEventsList);
+	void setPitchWheelValues(const std::vector<jack_midi_event_t> &pitchBendEventsList);
 	int Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes);
 private:
 	std::vector<Voice*> voices;
