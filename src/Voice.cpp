@@ -1,36 +1,23 @@
+#include <iostream>
 #include "Voice.h"
 
 Voice::Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
-	: phase(0), baseFrequency(frequency), wavetable(wavetable), noteOn(false), sustainPedalOn(false), sampleRate(sample_rate)
+	: phase(0), baseFrequency(frequency), wavetable(wavetable), noteOn(false), sustainPedalOn(false),
+	sampleRate(sample_rate), state(VoiceState::Inactive)
 {
-	state.reserve(4);
-	for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-		state.emplace_back(VoiceState::Inactive);
-	}
-	ramp_step = baseFrequency / sampleRate;
+	ramp_step = frequency / sampleRate;
+	std::cout << frequency << "\t" <<ramp_step << std::endl;
 }
 
 void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 {
-	if (noteOn || sustainPedalOn) {
-		for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-			state[i] = VoiceState::Sustain;
-		}
-	}
-	for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-		if (state[i] == VoiceState::Sustain) {
-			double frequency = baseFrequency * freqMod[i];
-			for (int j = 0; j < controlBufferSize; j++) {
-				ramp_step = frequency / sampleRate;
-				buffer[i * controlBufferSize + j] += 0.2 * wavetable.returnSample(frequency, phase);
-				phase += ramp_step;
-				phase = (phase > 1.0) ? phase - 1.0 : phase;
-			}
-		}
-	}
-	if (!noteOn && !sustainPedalOn) {
-		for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-			state[i] = VoiceState::Inactive;
+	if (state == VoiceState::Sustain) {
+		double frequency = baseFrequency * freqMod;
+		for (int i = 0; i < nframes; i++) {
+			ramp_step = frequency / sampleRate;
+			buffer[i] += 0.2f * wavetable.returnSample(frequency, phase);
+			phase += ramp_step;
+			phase = (phase > 1.0) ? phase - 1.0 : phase;
 		}
 	}
 }
@@ -38,41 +25,25 @@ void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 bool Voice::isActiveInCurrentBuffer()
 {
 	bool active = false;
-	for (VoiceState s : state) {
-		if (s != VoiceState::Inactive) {
-			active = true;
-		}
+	if (state != VoiceState::Inactive) {
+		active = true;
 	}
 	return active || noteOn || sustainPedalOn;
 }
 
-void Voice::on(jack_nframes_t time)
+void Voice::on()
 {
-	noteOn = true;
-	for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-		if (time > controlBufferSize * i) {
-			state[i] = VoiceState::Sustain;
-		}
-	}
+	state = VoiceState::Sustain;
 }
 
-void Voice::off(jack_nframes_t time)
+void Voice::off()
 {
-	noteOn = false;
-	for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-		if (time > controlBufferSize * i) {
-			state[i] = VoiceState::Inactive;
-		}
-	}
+	state = VoiceState::Inactive;
 }
 
-void Voice::setFrequencyModulation(jack_nframes_t time, double value)
+void Voice::setFrequencyModulation(double value)
 {
-	for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-		if (time > controlBufferSize * i) {
-			freqMod[i] = value;
-		}
-	}
+	freqMod = value;
 }
 
 

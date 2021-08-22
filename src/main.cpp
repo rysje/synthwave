@@ -23,26 +23,15 @@ int process(jack_nframes_t nframes, void *arg)
 	void *midi_in_buf = jack_port_get_buffer(midi_in, nframes);
 	jack_midi_event_t midi_event_in;
 	jack_nframes_t event_count = jack_midi_get_event_count(midi_in_buf);
+	std::vector<jack_midi_event_t> midiEventsList;
 	std::vector<jack_midi_event_t> midiNotesList;
 	std::vector<jack_midi_event_t> pitchBendEventsList;
 	auto *buffer = (jack_default_audio_sample_t *) jack_port_get_buffer (audio_out, nframes);
 	for (int i = 0; i < event_count; i++) {
 		jack_midi_event_get(&midi_event_in, midi_in_buf, i);
-		// Notes
-		if (((midi_event_in.buffer[0] & 0xf0) == 0x90) || ((midi_event_in.buffer[0] & 0xf0) == 0x80)) {
-			midiNotesList.push_back(midi_event_in);
-		}
-		// Pitch bend
-		if ((*(midi_event_in.buffer) & 0xf0) == 0xE0) {
-			pitchBendEventsList.push_back(midi_event_in);
-		}
-		// TODO: sustain, pitch bend and other MIDI messages here
-//		if (((*(midi_event_in.buffer) & 0xf0) == 0xB0) && (*(midi_event_in.buffer + 1) == 0x40)) {
-//
-//		}
+		midiEventsList.push_back(midi_event_in);
 	}
-	g_synthesizer->setPitchWheelValues(pitchBendEventsList);
-	g_synthesizer->setMIDINoteEvents(midiNotesList);
+	g_synthesizer->setMidiEvents(&midiEventsList);
 	g_synthesizer->Process(buffer, nframes);
 
 	return 0;

@@ -10,10 +10,13 @@ class Synthesizer
 {
 public:
 	Synthesizer();
-	void setMIDINoteEvents(const std::vector<jack_midi_event_t> &midiEventsList);
-	void setPitchWheelValues(const std::vector<jack_midi_event_t> &pitchBendEventsList);
+	void setMidiEvents(std::vector<jack_midi_event_t> *midiEventsList);
 	int Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes);
 private:
+	void processMidiEvents(jack_nframes_t begin, jack_nframes_t offset);
+	std::vector<jack_midi_event_t> *midiEventsList{};
+	jack_nframes_t controlBufferSize;
+	jack_nframes_t controlBuffersPerAudioBuffer;
 	std::vector<Voice*> voices;
 	Wavetable wavetable;
 };
