@@ -21,6 +21,7 @@ public:
 	void on();
 	void off();
 	static void setFrequencyModulation(double value);
+	static void setSustainPedal(char value);
 
 	inline static int attackLen;
 	inline static int decayLen;
@@ -30,7 +31,7 @@ public:
 private:
 	VoiceState state;
 	bool noteOn;
-	bool sustainPedalOn;
+	inline static bool sustainPedalOn = false;
 	double phase;
 	jack_default_audio_sample_t ramp_step;
 	double baseFrequency;

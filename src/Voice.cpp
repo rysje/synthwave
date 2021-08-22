@@ -2,7 +2,7 @@
 #include "Voice.h"
 
 Voice::Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
-	: phase(0), baseFrequency(frequency), wavetable(wavetable), noteOn(false), sustainPedalOn(false),
+	: phase(0), baseFrequency(frequency), wavetable(wavetable), noteOn(false),
 	sampleRate(sample_rate), state(VoiceState::Inactive)
 {
 	ramp_step = frequency / sampleRate;
@@ -25,25 +25,41 @@ void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 bool Voice::isActiveInCurrentBuffer()
 {
 	bool active = false;
+	if (!sustainPedalOn && !noteOn) {
+		state = VoiceState::Inactive;
+	}
 	if (state != VoiceState::Inactive) {
 		active = true;
 	}
-	return active || noteOn || sustainPedalOn;
+	return active;
 }
 
 void Voice::on()
 {
+	noteOn = true;
 	state = VoiceState::Sustain;
 }
 
 void Voice::off()
 {
-	state = VoiceState::Inactive;
+	noteOn = false;
+	if (!sustainPedalOn) {
+		state = VoiceState::Inactive;
+	}
 }
 
 void Voice::setFrequencyModulation(double value)
 {
 	freqMod = value;
+}
+
+void Voice::setSustainPedal(char value)
+{
+	if (value == 0) {
+		sustainPedalOn = false;
+	} else {
+		sustainPedalOn = true;
+	}
 }
 
 

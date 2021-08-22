@@ -45,7 +45,10 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			// multiply range by the interval ==>  pitchBendRange / 12
 			freqModValue = pow(2.0, (((double) pitchBendValue - 8192.0) * pitchBendRange) / (8192 * 12));
 			Voice::setFrequencyModulation(freqModValue);
-
+		}
+		// sustain pedal
+		if ((midiEvent.buffer[0] & 0xf0) == 0xB0 && midiEvent.buffer[1] == 0x40) {
+			Voice::setSustainPedal(midiEvent.buffer[2]);
 		}
 	}
 }
