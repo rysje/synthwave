@@ -32,12 +32,13 @@ double Wavetable::returnSample(double frequency, double phase)
 		tableIndex++;
 	}
 	// TODO: make sure phase is in the range <0; 1>
-	double sampleNumber = phase * tables[tableIndex].samples.size();
+	double sampleNumber = phase * (double) tables[tableIndex].samples.size();
 	int lowerSampleNumber = static_cast<int>(floor(sampleNumber));
 	int upperSampleNumber = lowerSampleNumber + 1;
 	double lowerSample = tables[tableIndex].samples[lowerSampleNumber];
 	double upperSample = tables[tableIndex].samples[upperSampleNumber];
-	return lowerSample + (sampleNumber - lowerSampleNumber) * (upperSample - lowerSample);
+	return std::lerp(lowerSample, upperSample, sampleNumber - lowerSampleNumber);
+	//return lowerSample + (sampleNumber - lowerSampleNumber) * (upperSample - lowerSample);
 
 }
 
