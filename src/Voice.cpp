@@ -34,9 +34,15 @@ void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 
 bool Voice::isActiveInCurrentBuffer()
 {
+	// jezeli nieaktywny to od razu zwraca false zeby nie zajmowac procka
+	if (ampAdsr.getState() == stk::ADSR::IDLE) {
+		return false;
+	}
+	// jezeli aktywny ale trzeba wyłączyć nute po pedale
 	if (!noteOn && !sustainPedalOn) {
 		ampAdsr.keyOff();
 	}
+	// jeżeli aktywny
 	return noteOn || (ampAdsr.getState() != stk::ADSR::IDLE);
 }
 
