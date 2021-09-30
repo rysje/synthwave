@@ -1,6 +1,8 @@
 #pragma once
 
 #include <jack/types.h>
+#include <stk/BiQuad.h>
+#include <stk/ADSR.h>
 #include "Wavetable.h"
 
 enum class VoiceState
@@ -29,6 +31,8 @@ public:
 	inline static int releaseLen;
 	inline static double freqMod = 1;
 private:
+	stk::BiQuad biquad;
+	stk::ADSR ampAdsr;
 	VoiceState state;
 	bool noteOn;
 	inline static bool sustainPedalOn = false;
