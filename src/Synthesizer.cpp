@@ -32,7 +32,7 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 		// note on
 		if ( (midiEvent.buffer[0] & 0xf0) == 0x90) {
 			unsigned char noteNumber = midiEvent.buffer[1];
-			voices[noteNumber]->on();
+			voices[noteNumber]->on(midiEvent.buffer[2]);
 		}
 		// pitch bend
 		if ((midiEvent.buffer[0] & 0xf0) == 0xE0) {

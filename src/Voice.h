@@ -20,10 +20,10 @@ public:
 	Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable);
 	void Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes);
 	bool isActiveInCurrentBuffer();
-	void on();
+	void on(unsigned char velocity);
 	void off();
 	static void setFrequencyModulation(double value);
-	static void setSustainPedal(char value);
+	static void setSustainPedal(unsigned char value);
 
 	inline static int attackLen;
 	inline static int decayLen;
@@ -31,6 +31,7 @@ public:
 	inline static int releaseLen;
 	inline static double freqMod = 1;
 private:
+	double amplitude;
 	stk::BiQuad biquad;
 	stk::ADSR ampAdsr;
 	VoiceState state;
