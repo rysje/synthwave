@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 Synthesizer::Synthesizer() : controlBufferSize(64), controlBuffersPerAudioBuffer(4)
 {
@@ -12,7 +13,7 @@ Synthesizer::Synthesizer() : controlBufferSize(64), controlBuffersPerAudioBuffer
 	}
 }
 
-void Synthesizer::setMidiEvents(std::vector<jack_midi_event_t>* midiEventsList)
+void Synthesizer::setMidiEvents(std::vector<jack_midi_event_t> *midiEventsList)
 {
 	this->midiEventsList = midiEventsList;
 }
@@ -31,7 +32,7 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 		// note on
 		if ( (midiEvent.buffer[0] & 0xf0) == 0x90) {
 			unsigned char noteNumber = midiEvent.buffer[1];
-			voices[noteNumber]->on(midiEvent.buffer[2]);
+			voices[noteNumber]->on();
 		}
 		// pitch bend
 		if ((midiEvent.buffer[0] & 0xf0) == 0xE0) {
