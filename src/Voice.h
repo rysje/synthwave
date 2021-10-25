@@ -18,7 +18,7 @@ class Voice
 {
 public:
 	Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable);
-	void Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes);
+	void Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes);
 	bool isActiveInCurrentBuffer();
 	void on(unsigned char velocity);
 	void off();

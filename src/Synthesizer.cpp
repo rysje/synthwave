@@ -53,7 +53,7 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 	}
 }
 
-int Synthesizer::Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes)
+int Synthesizer::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 {
 	for (int i = 0; i < nframes; i++) {
 		buffer[i] = 0;
