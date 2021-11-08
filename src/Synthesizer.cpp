@@ -30,12 +30,12 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			voices[noteNumber]->off();
 		}
 		// note on
-		if ( (midiEvent.buffer[0] & 0xf0) == 0x90) {
+		else if ( (midiEvent.buffer[0] & 0xf0) == 0x90) {
 			unsigned char noteNumber = midiEvent.buffer[1];
 			voices[noteNumber]->on(midiEvent.buffer[2]);
 		}
 		// pitch bend
-		if ((midiEvent.buffer[0] & 0xf0) == 0xE0) {
+		else if ((midiEvent.buffer[0] & 0xf0) == 0xe0) {
 			int pitchBendValue;
 			double pitchBendRange = 2.0;
 			double freqModValue;
@@ -46,9 +46,48 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			freqModValue = pow(2.0, (((double) pitchBendValue - 8192.0) * pitchBendRange) / (8192 * 12));
 			Voice::setFrequencyModulation(freqModValue);
 		}
-		// sustain pedal
-		if ((midiEvent.buffer[0] & 0xf0) == 0xB0 && midiEvent.buffer[1] == 0x40) {
-			Voice::setSustainPedal(midiEvent.buffer[2]);
+		// control messages
+		else if ((midiEvent.buffer[0] & 0xf0) == 0xB0) {
+			// sustain pedal
+			if (midiEvent.buffer[1] == 0x40) {
+				Voice::setSustainPedal(midiEvent.buffer[2]);
+			}
+			// attack length
+			else if (midiEvent.buffer[1] == 0x1f) {
+				// convert range to exponential <0.01; 1>
+				float value = (float) midiEvent.buffer[2] / 127.0f;
+				float arg = std::lerp(logf(0.01f), logf(1.0f), value);
+				for (auto voice: voices) {
+					voice->setAttackLength(expf(arg));
+				}
+			}
+			// decay length
+			else if (midiEvent.buffer[1] == 0x2) {
+				// convert range to exponential <0.01; 1>
+				float value = (float) midiEvent.buffer[2] / 127.0f;
+				float arg = std::lerp(logf(0.01f), logf(1.0f), value);
+				for (auto voice: voices) {
+					voice->setDecayLength(expf(arg));
+				}
+			}
+			// sustain level
+			else if (midiEvent.buffer[1] == 0x4) {
+				// convert range to exponential <0.1; 1>
+				float value = (float) midiEvent.buffer[2] / 127.0f;
+				float arg = std::lerp(logf(0.1f), logf(1.0f), value);
+				for (auto voice: voices) {
+					voice->setSustainLevel(expf(arg));
+				}
+			}
+			// release length
+			else if (midiEvent.buffer[1] == 0xa) {
+				// convert range to exponential <0.1; 2>
+				float value = (float) midiEvent.buffer[2] / 127.0f;
+				float arg = std::lerp(logf(0.1f), logf(2.0f), value);
+				for (auto voice: voices) {
+					voice->setReleaseLength(expf(arg));
+				}
+			}
 		}
 	}
 }

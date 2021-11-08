@@ -24,13 +24,17 @@ public:
 	void off();
 	static void setFrequencyModulation(double value);
 	static void setSustainPedal(unsigned char value);
+	void setAttackLength(float value);
+	void setDecayLength(float value);
+	void setSustainLevel(float value);
+	void setReleaseLength(float value);
 
-	inline static int attackLen;
-	inline static int decayLen;
-	inline static int sustainLev;
-	inline static int releaseLen;
-	inline static double freqMod = 1;
 private:
+	inline static float attackLength = 0.02;
+	inline static float decayLength = 0.08;
+	inline static float sustainLevel = 0.6;
+	inline static float releaseLength = 0.2;
+	inline static double freqMod = 1;
 	double amplitude;
 	stk::BiQuad biquad;
 	stk::ADSR ampAdsr;

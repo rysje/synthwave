@@ -12,10 +12,10 @@ Voice::Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
 		biquadFreq = sample_rate / 2.0;
 	}
 	biquad.setResonance(biquadFreq, 0.98, true);
-	ampAdsr.setAttackRate(1.0 / ( 0.02 * sampleRate));
-	ampAdsr.setDecayRate(1.0 / ( 0.08 * sampleRate));
-	ampAdsr.setSustainLevel(0.6);
-	ampAdsr.setReleaseRate(1.0 / ( 0.2 * sampleRate));
+	ampAdsr.setAttackRate(1.0 / (attackLength * sampleRate));
+	ampAdsr.setDecayRate(1.0 / (decayLength * sampleRate));
+	ampAdsr.setSustainLevel(sustainLevel);
+	ampAdsr.setReleaseRate(1.0 / (releaseLength * sampleRate));
 }
 
 void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
@@ -75,5 +75,26 @@ void Voice::setSustainPedal(unsigned char value)
 	}
 }
 
+void Voice::setAttackLength(float value)
+{
+	attackLength = value;
+	ampAdsr.setAttackRate(1.0 / (attackLength * sampleRate));
+}
 
+void Voice::setDecayLength(float value)
+{
+	decayLength = value;
+	ampAdsr.setDecayRate(1.0 / (decayLength * sampleRate));
+}
 
+void Voice::setSustainLevel(float value)
+{
+	sustainLevel = value;
+	ampAdsr.setSustainLevel(sustainLevel);
+}
+
+void Voice::setReleaseLength(float value)
+{
+	releaseLength = value;
+	ampAdsr.setReleaseRate(1.0 / (releaseLength * sampleRate));
+}
