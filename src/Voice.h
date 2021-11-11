@@ -17,12 +17,12 @@ enum class VoiceState
 class Voice
 {
 public:
-	Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable);
+	Voice(float frequency, jack_nframes_t sample_rate, Wavetable &wavetable);
 	void Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes);
 	bool isActiveInCurrentBuffer();
 	void on(unsigned char velocity);
 	void off();
-	static void setFrequencyModulation(double value);
+	static void setFrequencyModulation(float value);
 	static void setSustainPedal(unsigned char value);
 	void setAttackLength(float value);
 	void setDecayLength(float value);
@@ -37,16 +37,16 @@ private:
 	inline static float decayLength = 0.08;
 	inline static float sustainLevel = 0.6;
 	inline static float releaseLength = 0.2;
-	inline static double freqMod = 1;
-	double amplitude;
+	inline static float freqMod = 1;
+	float amplitude;
 	stk::BiQuad biquad;
 	stk::ADSR ampAdsr;
 	VoiceState state;
 	bool noteOn;
 	inline static bool sustainPedalOn = false;
-	double phase;
-	jack_default_audio_sample_t ramp_step;
-	double baseFrequency;
+	float phase;
+	float ramp_step;
+	float baseFrequency;
 	float filterFrequencyMultiplier;
 	float filterResonance;
 	Wavetable &wavetable;

@@ -6,9 +6,9 @@ void Wavetable::init(const std::string& filename)
 {
 	std::ifstream file(filename, std::ios::in);
 	for (std::string line; std::getline(file, line); ) {
-		double lowFrequency = std::stod(line);
+		float lowFrequency = std::stof(line);
 		std::getline(file, line);
-		double highFrequency = std::stod(line);
+		float highFrequency = std::stof(line);
 		std::getline(file, line);
 		int n_samples = std::stoi(line);
 		Data table(lowFrequency, highFrequency, n_samples);
@@ -22,27 +22,27 @@ void Wavetable::init(const std::string& filename)
 	}
 }
 
-double Wavetable::returnSample(double frequency, double phase)
+float Wavetable::returnSample(float frequency, float phase)
 {
 	int tableIndex = 0;
 	if (frequency < tables[tableIndex].lowFrequency) {
-		return 0.0;
+		return 0.0f;
 	}
 	while (tables[tableIndex].highFrequency < frequency) {
 		tableIndex++;
 	}
 	// TODO: make sure phase is in the range <0; 1>
-	double sampleNumber = phase * (double) tables[tableIndex].samples.size();
-	int lowerSampleNumber = static_cast<int>(floor(sampleNumber));
+	float sampleNumber = phase * (float) tables[tableIndex].samples.size();
+	int lowerSampleNumber = static_cast<int>(floorf(sampleNumber));
 	int upperSampleNumber = lowerSampleNumber + 1;
-	double lowerSample = tables[tableIndex].samples[lowerSampleNumber];
-	double upperSample = tables[tableIndex].samples[upperSampleNumber];
-	return std::lerp(lowerSample, upperSample, sampleNumber - lowerSampleNumber);
+	float lowerSample = tables[tableIndex].samples[lowerSampleNumber];
+	float upperSample = tables[tableIndex].samples[upperSampleNumber];
+	return std::lerp(lowerSample, upperSample, (float) sampleNumber - (float) lowerSampleNumber);
 	//return lowerSample + (sampleNumber - lowerSampleNumber) * (upperSample - lowerSample);
 
 }
 
-Wavetable::Data::Data(double lowFrequency, double highFrequency, int n_samples)
+Wavetable::Data::Data(float lowFrequency, float highFrequency, int n_samples)
 	: lowFrequency(lowFrequency), highFrequency(highFrequency)
 {
 	samples.reserve(n_samples + 1);
