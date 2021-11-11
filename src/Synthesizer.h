@@ -14,6 +14,7 @@ public:
 	int Process(jack_default_audio_sample_t *buffer, jack_nframes_t nframes);
 private:
 	void processMidiEvents(jack_nframes_t begin, jack_nframes_t offset);
+	static inline float convertMidiValueToExpRange(unsigned char midiValue, float lowerLimit, float upperLimit);
 	std::vector<jack_midi_event_t> *midiEventsList{};
 	jack_nframes_t controlBufferSize;
 	jack_nframes_t controlBuffersPerAudioBuffer;

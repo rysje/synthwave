@@ -54,38 +54,44 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			}
 			// attack length
 			else if (midiEvent.buffer[1] == 0x1f) {
-				// convert range to exponential <0.01; 1>
-				float value = (float) midiEvent.buffer[2] / 127.0f;
-				float arg = std::lerp(logf(0.01f), logf(1.0f), value);
+				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.01f, 1.0f);
 				for (auto voice: voices) {
-					voice->setAttackLength(expf(arg));
+					voice->setAttackLength(value);
 				}
 			}
 			// decay length
 			else if (midiEvent.buffer[1] == 0x2) {
-				// convert range to exponential <0.01; 1>
-				float value = (float) midiEvent.buffer[2] / 127.0f;
-				float arg = std::lerp(logf(0.01f), logf(1.0f), value);
+				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.01f, 1.0f);
 				for (auto voice: voices) {
-					voice->setDecayLength(expf(arg));
+					voice->setDecayLength(value);
 				}
 			}
 			// sustain level
 			else if (midiEvent.buffer[1] == 0x4) {
-				// convert range to exponential <0.1; 1>
-				float value = (float) midiEvent.buffer[2] / 127.0f;
-				float arg = std::lerp(logf(0.1f), logf(1.0f), value);
+				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.1f, 1.0f);
 				for (auto voice: voices) {
-					voice->setSustainLevel(expf(arg));
+					voice->setSustainLevel(value);
 				}
 			}
 			// release length
 			else if (midiEvent.buffer[1] == 0xa) {
-				// convert range to exponential <0.1; 2>
-				float value = (float) midiEvent.buffer[2] / 127.0f;
-				float arg = std::lerp(logf(0.1f), logf(2.0f), value);
+				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.1f, 2.0f);
 				for (auto voice: voices) {
-					voice->setReleaseLength(expf(arg));
+					voice->setReleaseLength(value);
+				}
+			}
+			// filter cutoff
+			else if (midiEvent.buffer[1] == 0x1) {
+				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.0f, 50.0f);
+				for (auto voice: voices) {
+					voice->setFilterFrequencyMultiplier(value);
+				}
+			}
+			// filter resonance
+			else if (midiEvent.buffer[1] == 0x5f) {
+				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.0f, 10.0f);
+				for (auto voice: voices) {
+					voice->setFilterResonance(value);
 				}
 			}
 		}
@@ -106,4 +112,11 @@ int Synthesizer::Process(jack_default_audio_sample_t *buffer, jack_nframes_t nfr
 		}
 	}
 	return 0;
+}
+
+float Synthesizer::convertMidiValueToExpRange(unsigned char midiValue, float lowerLimit, float upperLimit)
+{
+	float value = (float) midiValue / 127.0f;
+	float arg = std::lerp(logf(lowerLimit), logf(upperLimit), value);
+	return expf(arg);
 }

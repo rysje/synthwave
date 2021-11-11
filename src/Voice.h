@@ -28,8 +28,11 @@ public:
 	void setDecayLength(float value);
 	void setSustainLevel(float value);
 	void setReleaseLength(float value);
+	void setFilterFrequencyMultiplier(float value);
+	void setFilterResonance(float value);
 
 private:
+	void updateFilter();
 	inline static float attackLength = 0.02;
 	inline static float decayLength = 0.08;
 	inline static float sustainLevel = 0.6;
@@ -44,6 +47,8 @@ private:
 	double phase;
 	jack_default_audio_sample_t ramp_step;
 	double baseFrequency;
+	float filterFrequencyMultiplier;
+	float filterResonance;
 	Wavetable &wavetable;
 	jack_nframes_t sampleRate;
 };
