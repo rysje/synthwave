@@ -8,12 +8,8 @@ Voice::Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
 {
 	ramp_step = frequency / sampleRate;
 	std::cout << frequency << "\t" <<ramp_step << std::endl;
-	filterFrequencyMultiplier = frequency * 5.0;
-	if (filterFrequencyMultiplier > sample_rate / 2.0) {
-		filterFrequencyMultiplier = sample_rate / 2.0;
-	}
 	filterResonance = 2.0;
-	updateFilter();
+	setFilterFrequencyMultiplier(5.0f);
 	ampAdsr.setAttackRate(1.0 / (attackLength * sampleRate));
 	ampAdsr.setDecayRate(1.0 / (decayLength * sampleRate));
 	ampAdsr.setSustainLevel(sustainLevel);
@@ -123,5 +119,8 @@ void Voice::setFilterResonance(float value)
 void Voice::setFilterFrequencyMultiplier(float value)
 {
 	filterFrequencyMultiplier = baseFrequency * value;
+	if (filterFrequencyMultiplier > sampleRate / 2.0) {
+		filterFrequencyMultiplier = sampleRate / 2.0 - 1.0;
+	}
 	updateFilter();
 }
