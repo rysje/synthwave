@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include "Voice.h"
 
 Voice::Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
@@ -7,15 +8,16 @@ Voice::Voice(double frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
 {
 	ramp_step = frequency / sampleRate;
 	std::cout << frequency << "\t" <<ramp_step << std::endl;
-	double biquadFreq = frequency * 1.0;
-	if (biquadFreq > sample_rate) {
-		biquadFreq = sample_rate / 2.0;
+	filterFrequencyMultiplier = frequency * 5.0;
+	if (filterFrequencyMultiplier > sample_rate / 2.0) {
+		filterFrequencyMultiplier = sample_rate / 2.0;
 	}
-	biquad.setResonance(biquadFreq, 0.98, true);
-	ampAdsr.setAttackRate(1.0 / ( 0.02 * sampleRate));
-	ampAdsr.setDecayRate(1.0 / ( 0.08 * sampleRate));
-	ampAdsr.setSustainLevel(0.6);
-	ampAdsr.setReleaseRate(1.0 / ( 0.2 * sampleRate));
+	filterResonance = 2.0;
+	updateFilter();
+	ampAdsr.setAttackRate(1.0 / (attackLength * sampleRate));
+	ampAdsr.setDecayRate(1.0 / (decayLength * sampleRate));
+	ampAdsr.setSustainLevel(sustainLevel);
+	ampAdsr.setReleaseRate(1.0 / (releaseLength * sampleRate));
 }
 
 void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
@@ -75,5 +77,51 @@ void Voice::setSustainPedal(unsigned char value)
 	}
 }
 
+void Voice::setAttackLength(float value)
+{
+	attackLength = value;
+	ampAdsr.setAttackRate(1.0 / (attackLength * sampleRate));
+}
 
+void Voice::setDecayLength(float value)
+{
+	decayLength = value;
+	ampAdsr.setDecayRate(1.0 / (decayLength * sampleRate));
+}
 
+void Voice::setSustainLevel(float value)
+{
+	sustainLevel = value;
+	ampAdsr.setSustainLevel(sustainLevel);
+}
+
+void Voice::setReleaseLength(float value)
+{
+	releaseLength = value;
+	ampAdsr.setReleaseRate(1.0 / (releaseLength * sampleRate));
+}
+
+void Voice::updateFilter()
+{
+	float K = tanf(std::numbers::pi * filterFrequencyMultiplier / sampleRate);
+	float norm = 1 / (1 + K / filterResonance + K * K);
+	float a0 = K * K * norm;
+	float a1 = 2 * a0;
+	float a2 = a0;
+	float b1 = 2 * (K * K - 1) * norm;
+	float b2 = (1 - K / filterResonance + K * K) * norm;
+//	std::cout << a0 << " " << a1 << " " << a2 << " " << b1 << " " << b2 << std::endl;
+	biquad.setCoefficients( a0, a1, a2, b1, b2);
+}
+
+void Voice::setFilterResonance(float value)
+{
+	filterResonance = value;
+	updateFilter();
+}
+
+void Voice::setFilterFrequencyMultiplier(float value)
+{
+	filterFrequencyMultiplier = baseFrequency * value;
+	updateFilter();
+}
