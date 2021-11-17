@@ -10,13 +10,13 @@ class Wavetable
 public:
 	struct Data
 	{
-		double lowFrequency;
-		double highFrequency;
-		std::vector<double> samples;
-		Data(double lowFrequency, double highFrequency, int n_samples);
+		float lowFrequency;
+		float highFrequency;
+		std::vector<float> samples;
+		Data(float lowFrequency, float highFrequency, int n_samples);
 	};
 	std::vector<Data> tables;
 
 	void init(const std::string& filename);
-	double returnSample(double frequency, double phase);
+	float returnSample(float frequency, float phase);
 };
