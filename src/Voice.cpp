@@ -1,4 +1,5 @@
 #include <cmath>
+#include <numbers>
 #include "Voice.h"
 
 Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
@@ -19,7 +20,7 @@ void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 	float frequency = baseFrequency * freqMod;
 	ramp_step = frequency / (float) sampleRate;
 	for (int i = 0; i < nframes; i++) {
-		float sample = amplitude * 0.8f * wavetable.returnSample(frequency, phase);
+		float sample = amplitude * 0.3f * wavetable.returnSample(frequency, phase);
 		sample *= (float) ampAdsr.tick();
 		sample = (float) biquad.tick(sample);
 		buffer[i] += sample;
@@ -97,7 +98,7 @@ void Voice::setReleaseLength(float value)
 
 void Voice::updateFilter()
 {
-	float K = tanf((float) std::numbers::pi * filterFrequencyMultiplier / (float) sampleRate);
+	float K = tanf((float) std::numbers::pi_v<float> * filterFrequencyMultiplier / (float) sampleRate);
 	float norm = 1 / (1 + K / filterResonance + K * K);
 	float a0 = K * K * norm;
 	float a1 = 2 * a0;
