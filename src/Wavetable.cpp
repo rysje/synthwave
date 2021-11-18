@@ -1,10 +1,15 @@
 #include "Wavetable.h"
 
 #include <cmath>
+#include <iostream>
 
 void Wavetable::init(const std::string& filename)
 {
 	std::ifstream file(filename, std::ios::in);
+	if (!file.good()) {
+		std::cerr << "ERROR: Couldn't find the requested wavetable file: " << filename;
+		exit(1);
+	}
 	for (std::string line; std::getline(file, line); ) {
 		float lowFrequency = std::stof(line);
 		std::getline(file, line);
