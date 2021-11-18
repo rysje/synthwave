@@ -2,14 +2,18 @@
 
 #include <cmath>
 #include <algorithm>
-#include <iostream>
 
-Synthesizer::Synthesizer() : controlBufferSize(64), controlBuffersPerAudioBuffer(4)
+#include <jack/jack.h>
+
+Synthesizer::Synthesizer(jack_client_t* client) : controlBuffersPerAudioBuffer(4)
 {
 	wavetable.init("saw.synthwave");
 	voices.reserve(128);
+	auto sampleRate = jack_get_sample_rate(client);
+	auto bufferSize = jack_get_buffer_size(client);
+	controlBufferSize = bufferSize / controlBuffersPerAudioBuffer;
 	for (int i = 0; i < 128; i++) {
-		voices.emplace_back(new Voice((440.0f / 32.0f) * powf(2, (((float)i - 9.0f) / 12.0f)), 48000, wavetable));
+		voices.emplace_back(new Voice((440.0f / 32.0f) * powf(2, (((float)i - 9.0f) / 12.0f)), sampleRate, wavetable));
 	}
 }
 
