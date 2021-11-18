@@ -42,7 +42,7 @@ int process(jack_nframes_t nframes, void* arg)
 
 void connect_audio_ports()
 {
-	const char **available_audio_ports = jack_get_ports(
+	const char** available_audio_ports = jack_get_ports(
 		client, nullptr, JACK_DEFAULT_AUDIO_TYPE,
 		JackPortIsInput|JackPortIsPhysical|JackPortIsTerminal);
 
@@ -55,7 +55,7 @@ void connect_audio_ports()
 
 void connect_midi_ports()
 {
-	const char **available_midi_ports = jack_get_ports(
+	const char** available_midi_ports = jack_get_ports(
 		client, nullptr, JACK_DEFAULT_MIDI_TYPE,
 		JackPortIsOutput|JackPortIsPhysical|JackPortIsTerminal);
 

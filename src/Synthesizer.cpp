@@ -9,11 +9,11 @@ Synthesizer::Synthesizer() : controlBufferSize(64), controlBuffersPerAudioBuffer
 	wavetable.init("saw.synthwave");
 	voices.reserve(128);
 	for (int i = 0; i < 128; i++) {
-		voices.emplace_back(new Voice((440.0 / 32.0) * pow(2, (((double)i - 9.0) / 12.0)), 48000, wavetable));
+		voices.emplace_back(new Voice((440.0f / 32.0f) * powf(2, (((float)i - 9.0f) / 12.0f)), 48000, wavetable));
 	}
 }
 
-void Synthesizer::setMidiEvents(std::vector<jack_midi_event_t> *midiEventsList)
+void Synthesizer::setMidiEvents(std::vector<jack_midi_event_t>* midiEventsList)
 {
 	this->midiEventsList = midiEventsList;
 }
@@ -37,13 +37,13 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 		// pitch bend
 		else if ((midiEvent.buffer[0] & 0xf0) == 0xe0) {
 			int pitchBendValue;
-			double pitchBendRange = 2.0;
-			double freqModValue;
+			float pitchBendRange = 2.0f;
+			float freqModValue;
 			pitchBendValue = midiEvent.buffer[1];
 			pitchBendValue += midiEvent.buffer[2] << 7;
 			// convert to range <-1;1>  ==>  (pitchBendValue - 8192.0) / 8192
 			// multiply range by the interval ==>  pitchBendRange / 12
-			freqModValue = pow(2.0, (((double) pitchBendValue - 8192.0) * pitchBendRange) / (8192 * 12));
+			freqModValue = powf(2.0f, (((float) pitchBendValue - 8192.0f) * pitchBendRange) / (8192 * 12));
 			Voice::setFrequencyModulation(freqModValue);
 		}
 		// control messages

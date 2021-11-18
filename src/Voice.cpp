@@ -2,7 +2,7 @@
 #include <cmath>
 #include "Voice.h"
 
-Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable &wavetable)
+Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
 	: phase(0), baseFrequency(frequency), wavetable(wavetable), noteOn(false),
 	sampleRate(sample_rate), state(VoiceState::Inactive), amplitude(1.0)
 {
