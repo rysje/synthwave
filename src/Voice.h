@@ -5,15 +5,6 @@
 #include <stk/ADSR.h>
 #include "Wavetable.h"
 
-enum class VoiceState
-{
-	Inactive,
-	Attack,
-	Decay,
-	Sustain,
-	Release
-};
-
 class Voice
 {
 public:
@@ -41,7 +32,6 @@ private:
 	float amplitude;
 	stk::BiQuad biquad;
 	stk::ADSR ampAdsr;
-	VoiceState state;
 	bool noteOn;
 	inline static bool sustainPedalOn = false;
 	float phase;

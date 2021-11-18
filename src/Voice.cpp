@@ -4,7 +4,7 @@
 
 Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
 	: phase(0), baseFrequency(frequency), wavetable(wavetable), noteOn(false),
-	sampleRate(sample_rate), state(VoiceState::Inactive), amplitude(1.0)
+	sampleRate(sample_rate), amplitude(1.0)
 {
 	ramp_step = frequency / (float) sampleRate;
 	std::cout << frequency << "\t" <<ramp_step << std::endl;
