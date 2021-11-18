@@ -1,4 +1,3 @@
-#include <iostream>
 #include <cmath>
 #include "Voice.h"
 
@@ -7,7 +6,6 @@ Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
 	sampleRate(sample_rate), amplitude(1.0)
 {
 	ramp_step = frequency / (float) sampleRate;
-	std::cout << frequency << "\t" <<ramp_step << std::endl;
 	filterResonance = 2.0;
 	setFilterFrequencyMultiplier(5.0f);
 	ampAdsr.setAttackRate(1.0 / (attackLength * (float) sampleRate));
@@ -106,7 +104,6 @@ void Voice::updateFilter()
 	float a2 = a0;
 	float b1 = 2 * (K * K - 1) * norm;
 	float b2 = (1 - K / filterResonance + K * K) * norm;
-//	std::cout << a0 << " " << a1 << " " << a2 << " " << b1 << " " << b2 << std::endl;
 	biquad.setCoefficients( a0, a1, a2, b1, b2);
 }
 

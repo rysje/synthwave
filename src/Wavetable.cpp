@@ -38,8 +38,6 @@ float Wavetable::returnSample(float frequency, float phase)
 	float lowerSample = tables[tableIndex].samples[lowerSampleNumber];
 	float upperSample = tables[tableIndex].samples[upperSampleNumber];
 	return std::lerp(lowerSample, upperSample, (float) sampleNumber - (float) lowerSampleNumber);
-	//return lowerSample + (sampleNumber - lowerSampleNumber) * (upperSample - lowerSample);
-
 }
 
 Wavetable::Data::Data(float lowFrequency, float highFrequency, int n_samples)
