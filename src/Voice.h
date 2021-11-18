@@ -11,7 +11,7 @@ public:
 	Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable);
 	void Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes);
 	bool isActiveInCurrentBuffer();
-	void on(unsigned char velocity);
+	void on(float velocity);
 	void off();
 	static void setFrequencyModulation(float value);
 	static void setSustainPedal(unsigned char value);

@@ -36,7 +36,8 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 		// note on
 		else if ( (midiEvent.buffer[0] & 0xf0) == 0x90) {
 			unsigned char noteNumber = midiEvent.buffer[1];
-			voices[noteNumber]->on(midiEvent.buffer[2]);
+			float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.01f, 1.0f);
+			voices[noteNumber]->on(value);
 		}
 		// pitch bend
 		else if ((midiEvent.buffer[0] & 0xf0) == 0xe0) {

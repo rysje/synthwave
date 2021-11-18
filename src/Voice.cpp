@@ -19,7 +19,7 @@ void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 	float frequency = baseFrequency * freqMod;
 	ramp_step = frequency / (float) sampleRate;
 	for (int i = 0; i < nframes; i++) {
-		float sample = amplitude * 0.4f * wavetable.returnSample(frequency, phase);
+		float sample = amplitude * 0.8f * wavetable.returnSample(frequency, phase);
 		sample *= (float) ampAdsr.tick();
 		sample = (float) biquad.tick(sample);
 		buffer[i] += sample;
@@ -42,9 +42,9 @@ bool Voice::isActiveInCurrentBuffer()
 	return noteOn || (ampAdsr.getState() != stk::ADSR::IDLE);
 }
 
-void Voice::on(unsigned char velocity)
+void Voice::on(float velocity)
 {
-	amplitude = (float) velocity / 127.0f;
+	amplitude = velocity;
 	noteOn = true;
 	ampAdsr.keyOn();
 }
