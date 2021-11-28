@@ -45,6 +45,14 @@ float Wavetable::returnSample(float frequency, float phase)
 	return std::lerp(lowerSample, upperSample, (float) sampleNumber - (float) lowerSampleNumber);
 }
 
+Wavetable::Wavetable(const std::string &filename)
+{
+	init(filename);
+}
+
+Wavetable::Wavetable()
+= default;
+
 Wavetable::Data::Data(float lowFrequency, float highFrequency, int n_samples)
 	: lowFrequency(lowFrequency), highFrequency(highFrequency)
 {

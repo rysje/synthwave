@@ -18,5 +18,7 @@ public:
 	std::vector<Data> tables;
 
 	void init(const std::string& filename);
+	Wavetable();
+	Wavetable(const std::string& filename);
 	float returnSample(float frequency, float phase);
 };

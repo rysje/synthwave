@@ -2,18 +2,34 @@
 
 #include <cmath>
 #include <algorithm>
+#include <filesystem>
+#include <iostream>
 
 #include <jack/jack.h>
 
-Synthesizer::Synthesizer(jack_client_t* client) : controlBuffersPerAudioBuffer(4)
+Synthesizer::Synthesizer(jack_client_t* client, const char* exePath) : controlBuffersPerAudioBuffer(4)
 {
-	wavetable.init("saw.synthwave");
-	voices.reserve(128);
+	// find all files in wavetables subdirectory
+	std::filesystem::path exeDir = std::filesystem::path(exePath).parent_path();
+	std::vector<std::filesystem::path> wavetable_files;
+	std::copy(std::filesystem::directory_iterator(exeDir/"wavetables"), std::filesystem::directory_iterator(), std::back_inserter(wavetable_files));
+	std::sort(wavetable_files.begin(), wavetable_files.end());
+	// create wavetable from every .synthwave file
+	for (const auto& filename : wavetable_files) {
+		if (filename.extension().string() == ".synthwave") {
+			std::cout << "Found wavetable file: " << filename << std::endl;
+			wavetables.emplace_back(Wavetable{filename});
+		}
+	}
+	wavetable = wavetables[0];
+	// initialize buffers' size
 	auto sampleRate = jack_get_sample_rate(client);
 	auto bufferSize = jack_get_buffer_size(client);
 	controlBufferSize = bufferSize / controlBuffersPerAudioBuffer;
+	// initialize voices
+	voices.reserve(128);
 	for (int i = 0; i < 128; i++) {
-		voices.emplace_back(new Voice((440.0f / 32.0f) * powf(2, (((float)i - 9.0f) / 12.0f)), sampleRate, wavetable));
+		voices.emplace_back(new Voice((442.0f / 32.0f) * powf(2, (((float)i - 9.0f) / 12.0f)), sampleRate, wavetable));
 	}
 }
 
@@ -50,6 +66,16 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			// multiply range by the interval ==>  pitchBendRange / 12
 			freqModValue = powf(2.0f, (((float) pitchBendValue - 8192.0f) * pitchBendRange) / (8192 * 12));
 			Voice::setFrequencyModulation(freqModValue);
+		}
+		// program change
+		else if ((midiEvent.buffer[0] & 0xf0) == 0xc0) {
+			auto wavetableNumber = static_cast<unsigned int>(midiEvent.buffer[1]);
+			if (wavetableNumber >= wavetables.size()) {
+				continue;
+			}
+			else {
+				wavetable = wavetables[wavetableNumber];
+			}
 		}
 		// control messages
 		else if ((midiEvent.buffer[0] & 0xf0) == 0xB0) {

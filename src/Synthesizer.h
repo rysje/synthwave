@@ -10,7 +10,7 @@
 class Synthesizer
 {
 public:
-	Synthesizer(jack_client_t* client);
+	Synthesizer(jack_client_t* client, const char* exePath);
 	void setMidiEvents(std::vector<jack_midi_event_t> *midiEventsList);
 	int Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes);
 private:
@@ -20,5 +20,6 @@ private:
 	jack_nframes_t controlBufferSize;
 	jack_nframes_t controlBuffersPerAudioBuffer;
 	std::vector<Voice*> voices;
+	std::vector<Wavetable> wavetables;
 	Wavetable wavetable;
 };

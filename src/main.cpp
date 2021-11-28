@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	if ((client = jack_client_open("synthwave", JackNullOption, nullptr)) == nullptr) {
 		std::cerr << "JACK server not running";
 	}
-	g_synthesizer = new Synthesizer(client);
+	g_synthesizer = new Synthesizer(client, argv[0]);
 	jack_set_process_callback(client, process, nullptr);
 	
 	midi_in = jack_port_register(client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
