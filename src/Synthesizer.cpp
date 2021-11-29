@@ -7,7 +7,8 @@
 
 #include <jack/jack.h>
 
-Synthesizer::Synthesizer(jack_client_t* client, const char* exePath) : controlBuffersPerAudioBuffer(4)
+Synthesizer::Synthesizer(jack_client_t* client, const char* exePath) : controlBuffersPerAudioBuffer(4), lfoDepth(0.0f),
+	lfoPhase(0.0f), lfoFrequency(6.0f), pitchBendFreqMod(1.0f)
 {
 	// find all files in wavetables subdirectory
 	std::filesystem::path exeDir = std::filesystem::path(exePath).parent_path();
@@ -22,9 +23,10 @@ Synthesizer::Synthesizer(jack_client_t* client, const char* exePath) : controlBu
 		}
 	}
 	wavetable = wavetables[0];
+	numberOfWavetables = wavetables.size();
 	// initialize buffers' size
-	auto sampleRate = jack_get_sample_rate(client);
-	auto bufferSize = jack_get_buffer_size(client);
+	sampleRate = jack_get_sample_rate(client);
+	bufferSize = jack_get_buffer_size(client);
 	controlBufferSize = bufferSize / controlBuffersPerAudioBuffer;
 	// initialize voices
 	voices.reserve(128);
@@ -59,18 +61,16 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 		else if ((midiEvent.buffer[0] & 0xf0) == 0xe0) {
 			int pitchBendValue;
 			float pitchBendRange = 2.0f;
-			float freqModValue;
 			pitchBendValue = midiEvent.buffer[1];
 			pitchBendValue += midiEvent.buffer[2] << 7;
 			// convert to range <-1;1>  ==>  (pitchBendValue - 8192.0) / 8192
 			// multiply range by the interval ==>  pitchBendRange / 12
-			freqModValue = powf(2.0f, (((float) pitchBendValue - 8192.0f) * pitchBendRange) / (8192 * 12));
-			Voice::setFrequencyModulation(freqModValue);
+			pitchBendFreqMod = powf(2.0f, (((float) pitchBendValue - 8192.0f) * pitchBendRange) / (8192 * 12));
 		}
 		// program change
 		else if ((midiEvent.buffer[0] & 0xf0) == 0xc0) {
 			auto wavetableNumber = static_cast<unsigned int>(midiEvent.buffer[1]);
-			if (wavetableNumber >= wavetables.size()) {
+			if (wavetableNumber >= numberOfWavetables) {
 				continue;
 			}
 			else {
@@ -125,6 +125,14 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 					voice->setFilterResonance(value);
 				}
 			}
+			// LFO frequency
+			else if (midiEvent.buffer[1] == 0x50) {
+				lfoFrequency = convertMidiValueToExpRange(midiEvent.buffer[2], 0.5f, 10.0f);
+			}
+			// LFO depth
+			else if (midiEvent.buffer[1] == 0x13) {
+				lfoDepth = static_cast<float>(midiEvent.buffer[2]) / 127.0f / 24.0f;
+			}
 		}
 	}
 }
@@ -135,6 +143,7 @@ int Synthesizer::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nfr
 		buffer[i] = 0;
 	}
 	for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
+		Voice::setFrequencyModulation(powf(2.0f, LFO()) * pitchBendFreqMod);
 		processMidiEvents(i * controlBufferSize, controlBufferSize);
 		for (int j = 0; j < 128; j++) {
 			if (voices[j]->isActiveInCurrentBuffer()) {
@@ -150,4 +159,13 @@ float Synthesizer::convertMidiValueToExpRange(unsigned char midiValue, float low
 	float value = (float) midiValue / 127.0f;
 	float arg = std::lerp(logf(lowerLimit), logf(upperLimit), value);
 	return expf(arg);
+}
+
+float Synthesizer::LFO()
+{
+	float ramp_step = lfoFrequency / (static_cast<float>(sampleRate) / static_cast<float>(controlBufferSize));
+	lfoPhase += ramp_step;
+	lfoPhase = (lfoPhase > 1.0f) ? lfoPhase - 1.0f : lfoPhase;
+	// get the last wavetable which should be sine wave
+	return lfoDepth * wavetables[numberOfWavetables - 1].returnSample(lfoFrequency, lfoPhase);
 }
