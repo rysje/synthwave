@@ -19,15 +19,16 @@ public:
 	void setDecayLength(float value);
 	void setSustainLevel(float value);
 	void setReleaseLength(float value);
-	void setFilterFrequencyMultiplier(float value);
-	void setFilterResonance(float value);
+	static void setFilterFrequencyMultiplier(float value);
+	static void setFilterResonance(float value);
+	static void setFilterModulation(float value);
 
 private:
 	void updateFilter();
-	inline static float attackLength = 0.02;
-	inline static float decayLength = 0.08;
-	inline static float sustainLevel = 0.6;
-	inline static float releaseLength = 0.2;
+	float attackLength = 0.02;
+	float decayLength = 0.08;
+	float sustainLevel = 0.6;
+	float releaseLength = 0.2;
 	inline static float freqMod = 1;
 	float amplitude;
 	stk::BiQuad biquad;
@@ -37,8 +38,9 @@ private:
 	float phase;
 	float ramp_step;
 	float baseFrequency;
-	float filterFrequencyMultiplier;
-	float filterResonance;
+	inline static float filterFrequencyMultiplier = 5.0f;
+	inline static float filterResonance = 2.0f;
+	inline static float filterModulation = 0.0f;
 	Wavetable &wavetable;
 	jack_nframes_t sampleRate;
 };

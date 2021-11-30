@@ -18,7 +18,6 @@ private:
 	void processMidiEvents(jack_nframes_t begin, jack_nframes_t offset);
 	static inline float convertMidiValueToExpRange(unsigned char midiValue, float lowerLimit, float upperLimit);
 	std::vector<jack_midi_event_t>* midiEventsList{};
-	float pitchBendFreqMod;
 	float lfoFrequency;
 	float lfoDepth;
 	float lfoPhase;

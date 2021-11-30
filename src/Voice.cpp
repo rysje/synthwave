@@ -7,8 +7,6 @@ Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
 	sampleRate(sample_rate), amplitude(1.0)
 {
 	ramp_step = frequency / (float) sampleRate;
-	filterResonance = 2.0;
-	setFilterFrequencyMultiplier(5.0f);
 	ampAdsr.setAttackRate(1.0 / (attackLength * (float) sampleRate));
 	ampAdsr.setDecayRate(1.0 / (decayLength * (float) sampleRate));
 	ampAdsr.setSustainLevel(sustainLevel);
@@ -17,6 +15,7 @@ Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
 
 void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 {
+	updateFilter();
 	float frequency = baseFrequency * freqMod;
 	ramp_step = frequency / (float) sampleRate;
 	for (int i = 0; i < nframes; i++) {
@@ -98,7 +97,12 @@ void Voice::setReleaseLength(float value)
 
 void Voice::updateFilter()
 {
-	float K = tanf((float) std::numbers::pi_v<float> * filterFrequencyMultiplier / (float) sampleRate);
+	//filterFrequencyMultiplier += 2.0f * static_cast<float>(ampAdsr.lastOut());
+	float filterFrequency = baseFrequency * filterFrequencyMultiplier * (1 + filterModulation);
+	if (filterFrequency > (float) sampleRate / 2.0f) {
+		filterFrequency = (float) sampleRate / 2.0f - 1.0f;
+	}
+	float K = tanf((float) std::numbers::pi_v<float> * filterFrequency / (float) sampleRate);
 	float norm = 1 / (1 + K / filterResonance + K * K);
 	float a0 = K * K * norm;
 	float a1 = 2 * a0;
@@ -111,14 +115,14 @@ void Voice::updateFilter()
 void Voice::setFilterResonance(float value)
 {
 	filterResonance = value;
-	updateFilter();
 }
 
 void Voice::setFilterFrequencyMultiplier(float value)
 {
-	filterFrequencyMultiplier = baseFrequency * value;
-	if (filterFrequencyMultiplier > (float) sampleRate / 2.0f) {
-		filterFrequencyMultiplier = (float) sampleRate / 2.0f - 1.0f;
-	}
-	updateFilter();
+	filterFrequencyMultiplier = value;
+}
+
+void Voice::setFilterModulation(float value)
+{
+	filterModulation = value;
 }

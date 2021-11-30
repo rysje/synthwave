@@ -8,7 +8,7 @@
 #include <jack/jack.h>
 
 Synthesizer::Synthesizer(jack_client_t* client, const char* exePath) : controlBuffersPerAudioBuffer(4), lfoDepth(0.0f),
-	lfoPhase(0.0f), lfoFrequency(6.0f), pitchBendFreqMod(1.0f)
+	lfoPhase(0.0f), lfoFrequency(6.0f)
 {
 	// find all files in wavetables subdirectory
 	std::filesystem::path exeDir = std::filesystem::path(exePath).parent_path();
@@ -61,11 +61,13 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 		else if ((midiEvent.buffer[0] & 0xf0) == 0xe0) {
 			int pitchBendValue;
 			float pitchBendRange = 2.0f;
+			float freqModValue;
 			pitchBendValue = midiEvent.buffer[1];
 			pitchBendValue += midiEvent.buffer[2] << 7;
 			// convert to range <-1;1>  ==>  (pitchBendValue - 8192.0) / 8192
 			// multiply range by the interval ==>  pitchBendRange / 12
-			pitchBendFreqMod = powf(2.0f, (((float) pitchBendValue - 8192.0f) * pitchBendRange) / (8192 * 12));
+			freqModValue = powf(2.0f, (((float) pitchBendValue - 8192.0f) * pitchBendRange) / (8192 * 12));
+			Voice::setFrequencyModulation(freqModValue);
 		}
 		// program change
 		else if ((midiEvent.buffer[0] & 0xf0) == 0xc0) {
@@ -114,16 +116,12 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			// filter cutoff
 			else if (midiEvent.buffer[1] == 0x1) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.0f, 50.0f);
-				for (auto voice: voices) {
-					voice->setFilterFrequencyMultiplier(value);
-				}
+				Voice::setFilterFrequencyMultiplier(value);
 			}
 			// filter resonance
 			else if (midiEvent.buffer[1] == 0x5f) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.0f, 10.0f);
-				for (auto voice: voices) {
-					voice->setFilterResonance(value);
-				}
+				Voice::setFilterResonance(value);
 			}
 			// LFO frequency
 			else if (midiEvent.buffer[1] == 0x50) {
@@ -131,7 +129,7 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			}
 			// LFO depth
 			else if (midiEvent.buffer[1] == 0x13) {
-				lfoDepth = static_cast<float>(midiEvent.buffer[2]) / 127.0f / 24.0f;
+				lfoDepth = static_cast<float>(midiEvent.buffer[2]) / 500.0f;
 			}
 		}
 	}
@@ -143,7 +141,7 @@ int Synthesizer::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nfr
 		buffer[i] = 0;
 	}
 	for (int i = 0; i < controlBuffersPerAudioBuffer; i++) {
-		Voice::setFrequencyModulation(powf(2.0f, LFO()) * pitchBendFreqMod);
+		Voice::setFilterModulation(LFO());
 		processMidiEvents(i * controlBufferSize, controlBufferSize);
 		for (int j = 0; j < 128; j++) {
 			if (voices[j]->isActiveInCurrentBuffer()) {
