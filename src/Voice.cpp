@@ -1,5 +1,6 @@
 #include <cmath>
 #include <numbers>
+#include <iostream>
 #include "Voice.h"
 
 Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
@@ -7,10 +8,10 @@ Voice::Voice(float frequency, jack_nframes_t sample_rate, Wavetable& wavetable)
 	sampleRate(sample_rate), amplitude(1.0)
 {
 	ramp_step = frequency / (float) sampleRate;
-	ampAdsr.setAttackRate(1.0 / (attackLength * (float) sampleRate));
-	ampAdsr.setDecayRate(1.0 / (decayLength * (float) sampleRate));
-	ampAdsr.setSustainLevel(sustainLevel);
-	ampAdsr.setReleaseRate(1.0 / (releaseLength * (float) sampleRate));
+	adsr.setAttackRate(1.0 / (attackLength * (float) sampleRate));
+	adsr.setDecayRate(1.0 / (decayLength * (float) sampleRate));
+	adsr.setSustainLevel(sustainLevel);
+	adsr.setReleaseRate(1.0 / (releaseLength * (float) sampleRate));
 }
 
 void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
@@ -20,7 +21,7 @@ void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 	ramp_step = frequency / (float) sampleRate;
 	for (int i = 0; i < nframes; i++) {
 		float sample = amplitude * 0.3f * wavetable.returnSample(frequency, phase);
-		sample *= (float) ampAdsr.tick();
+		sample *= (float) adsr.tick();
 		sample = (float) biquad.tick(sample);
 		buffer[i] += sample;
 		phase += ramp_step;
@@ -31,29 +32,29 @@ void Voice::Process(jack_default_audio_sample_t* buffer, jack_nframes_t nframes)
 bool Voice::isActiveInCurrentBuffer()
 {
 	// jezeli nieaktywny to od razu zwraca false zeby nie zajmowac procka
-	if (ampAdsr.getState() == stk::ADSR::IDLE) {
+	if (adsr.getState() == stk::ADSR::IDLE) {
 		return false;
 	}
 	// jezeli aktywny ale trzeba wyłączyć nute po pedale
 	if (!noteOn && !sustainPedalOn) {
-		ampAdsr.keyOff();
+		adsr.keyOff();
 	}
 	// jeżeli aktywny
-	return noteOn || (ampAdsr.getState() != stk::ADSR::IDLE);
+	return noteOn || (adsr.getState() != stk::ADSR::IDLE);
 }
 
 void Voice::on(float velocity)
 {
 	amplitude = velocity;
 	noteOn = true;
-	ampAdsr.keyOn();
+	adsr.keyOn();
 }
 
 void Voice::off()
 {
 	noteOn = false;
 	if (!sustainPedalOn) {
-		ampAdsr.keyOff();
+		adsr.keyOff();
 	}
 }
 
@@ -74,33 +75,36 @@ void Voice::setSustainPedal(unsigned char value)
 void Voice::setAttackLength(float value)
 {
 	attackLength = value;
-	ampAdsr.setAttackRate(1.0f / (attackLength * (float) sampleRate));
+	adsr.setAttackRate(1.0f / (attackLength * (float) sampleRate));
 }
 
 void Voice::setDecayLength(float value)
 {
 	decayLength = value;
-	ampAdsr.setDecayRate(1.0f / (decayLength * (float) sampleRate));
+	adsr.setDecayRate(1.0f / (decayLength * (float) sampleRate));
 }
 
 void Voice::setSustainLevel(float value)
 {
 	sustainLevel = value;
-	ampAdsr.setSustainLevel(sustainLevel);
+	adsr.setSustainLevel(sustainLevel);
 }
 
 void Voice::setReleaseLength(float value)
 {
 	releaseLength = value;
-	ampAdsr.setReleaseRate(1.0f / (releaseLength * (float) sampleRate));
+	adsr.setReleaseRate(1.0f / (releaseLength * (float) sampleRate));
 }
 
 void Voice::updateFilter()
 {
-	//filterFrequencyMultiplier += 2.0f * static_cast<float>(ampAdsr.lastOut());
-	float filterFrequency = baseFrequency * filterFrequencyMultiplier * (1 + filterModulation);
+	float filterEnvelope = 1 + filterEnvelopeFactor * (static_cast<float>(adsr.lastOut()) - sustainLevel);
+	float filterFrequency = baseFrequency * filterFrequencyMultiplier * filterEnvelope * (1 + filterModulation);
 	if (filterFrequency > (float) sampleRate / 2.0f) {
-		filterFrequency = (float) sampleRate / 2.0f - 1.0f;
+		filterFrequency = (float) sampleRate / 2.0f - 100.0f;
+	}
+	if (filterFrequency < baseFrequency * 1.5f) {
+		filterFrequency = baseFrequency * 1.5f;
 	}
 	float K = tanf((float) std::numbers::pi_v<float> * filterFrequency / (float) sampleRate);
 	float norm = 1 / (1 + K / filterResonance + K * K);
@@ -125,4 +129,9 @@ void Voice::setFilterFrequencyMultiplier(float value)
 void Voice::setFilterModulation(float value)
 {
 	filterModulation = value;
+}
+
+void Voice::setFilterEnvelopeFactor(float value)
+{
+	filterEnvelopeFactor = value;
 }

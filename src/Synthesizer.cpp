@@ -115,7 +115,7 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			}
 			// filter cutoff
 			else if (midiEvent.buffer[1] == 0x1) {
-				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.0f, 50.0f);
+				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.5f, 50.0f);
 				Voice::setFilterFrequencyMultiplier(value);
 			}
 			// filter resonance
@@ -130,6 +130,10 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			// LFO depth
 			else if (midiEvent.buffer[1] == 0x13) {
 				lfoDepth = static_cast<float>(midiEvent.buffer[2]) / 500.0f;
+			}
+			// filter envelope factor
+			else if (midiEvent.buffer[1] == 0x42) {
+				Voice::setFilterEnvelopeFactor(static_cast<float>(midiEvent.buffer[2]) / 70.0f);
 			}
 		}
 	}
@@ -164,6 +168,6 @@ float Synthesizer::LFO()
 	float ramp_step = lfoFrequency / (static_cast<float>(sampleRate) / static_cast<float>(controlBufferSize));
 	lfoPhase += ramp_step;
 	lfoPhase = (lfoPhase > 1.0f) ? lfoPhase - 1.0f : lfoPhase;
-	// get the last wavetable which should be sine wave
+	// get the last wavetable which should be a sine wave
 	return lfoDepth * wavetables[numberOfWavetables - 1].returnSample(lfoFrequency, lfoPhase);
 }

@@ -22,6 +22,7 @@ public:
 	static void setFilterFrequencyMultiplier(float value);
 	static void setFilterResonance(float value);
 	static void setFilterModulation(float value);
+	static void setFilterEnvelopeFactor(float value);
 
 private:
 	void updateFilter();
@@ -32,7 +33,7 @@ private:
 	inline static float freqMod = 1;
 	float amplitude;
 	stk::BiQuad biquad;
-	stk::ADSR ampAdsr;
+	stk::ADSR adsr;
 	bool noteOn;
 	inline static bool sustainPedalOn = false;
 	float phase;
@@ -41,6 +42,7 @@ private:
 	inline static float filterFrequencyMultiplier = 5.0f;
 	inline static float filterResonance = 2.0f;
 	inline static float filterModulation = 0.0f;
+	inline static float filterEnvelopeFactor = 0.0f;
 	Wavetable &wavetable;
 	jack_nframes_t sampleRate;
 };
