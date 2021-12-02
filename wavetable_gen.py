@@ -44,8 +44,8 @@ def gen_triangle_spectrum(length: int, amp=1.0) -> np.ndarray:  # TODO: this doe
     """
     tab = np.array(length * [0.0])
     for i in range(1, length // 2):
-        n = 2 * i + 1
-        tab[2 * i - 1] = ((-1) ** i) / (n ** 2)
+        n = 2 * i - 1
+        tab[n] = ((-1) ** i) / (n ** 2)
     return amp * tab.astype(complex) * (0 + 1j)
 
 
