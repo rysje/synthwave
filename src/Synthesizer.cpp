@@ -129,11 +129,11 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			}
 			// LFO depth (MIDI CC name: Modulation wheel
 			else if (midiEvent.buffer[1] == 1) {
-				lfoDepth = static_cast<float>(midiEvent.buffer[2]) / 500.0f;
+				lfoDepth = static_cast<float>(midiEvent.buffer[2]) / 508.0f;
 			}
 			// filter envelope factor (MIDI CC name: Sound Controller 9)
 			else if (midiEvent.buffer[1] == 78) {
-				Voice::setFilterEnvelopeFactor(static_cast<float>(midiEvent.buffer[2]) / 70.0f);
+				Voice::setFilterEnvelopeFactor(static_cast<float>(midiEvent.buffer[2]) / 63.5f);
 			}
 		}
 	}
