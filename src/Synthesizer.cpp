@@ -85,54 +85,54 @@ void Synthesizer::processMidiEvents(jack_nframes_t begin, jack_nframes_t offset)
 			if (midiEvent.buffer[1] == 0x40) {
 				Voice::setSustainPedal(midiEvent.buffer[2]);
 			}
-			// attack length
-			else if (midiEvent.buffer[1] == 0x1f) {
+			// attack length (MIDI CC name: Attack Time)
+			else if (midiEvent.buffer[1] == 73) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.01f, 1.0f);
 				for (auto voice: voices) {
 					voice->setAttackLength(value);
 				}
 			}
-			// decay length
-			else if (midiEvent.buffer[1] == 0x2) {
+			// decay length (MIDI CC name: Sound Controller 6)
+			else if (midiEvent.buffer[1] == 75) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.01f, 1.0f);
 				for (auto voice: voices) {
 					voice->setDecayLength(value);
 				}
 			}
-			// sustain level
-			else if (midiEvent.buffer[1] == 0x4) {
+			// sustain level (MIDI CC name: Sound Controller 7)
+			else if (midiEvent.buffer[1] == 76) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.1f, 1.0f);
 				for (auto voice: voices) {
 					voice->setSustainLevel(value);
 				}
 			}
-			// release length
-			else if (midiEvent.buffer[1] == 0xa) {
+			// release length (MIDI CC name: Release Time)
+			else if (midiEvent.buffer[1] == 72) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 0.1f, 2.0f);
 				for (auto voice: voices) {
 					voice->setReleaseLength(value);
 				}
 			}
-			// filter cutoff
-			else if (midiEvent.buffer[1] == 0x1) {
+			// filter cutoff (MIDI CC name: Brightness)
+			else if (midiEvent.buffer[1] == 74) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.5f, 50.0f);
 				Voice::setFilterFrequencyMultiplier(value);
 			}
-			// filter resonance
-			else if (midiEvent.buffer[1] == 0x5f) {
+			// filter resonance (MIDI CC name: Timber/Harmonic Intensity)
+			else if (midiEvent.buffer[1] == 71) {
 				float value = convertMidiValueToExpRange(midiEvent.buffer[2], 1.0f, 10.0f);
 				Voice::setFilterResonance(value);
 			}
-			// LFO frequency
-			else if (midiEvent.buffer[1] == 0x50) {
+			// LFO frequency (MIDI CC name: Sound Controller 8)
+			else if (midiEvent.buffer[1] == 77) {
 				lfoFrequency = convertMidiValueToExpRange(midiEvent.buffer[2], 0.5f, 10.0f);
 			}
-			// LFO depth
-			else if (midiEvent.buffer[1] == 0x13) {
+			// LFO depth (MIDI CC name: Modulation wheel
+			else if (midiEvent.buffer[1] == 1) {
 				lfoDepth = static_cast<float>(midiEvent.buffer[2]) / 500.0f;
 			}
-			// filter envelope factor
-			else if (midiEvent.buffer[1] == 0x42) {
+			// filter envelope factor (MIDI CC name: Sound Controller 9)
+			else if (midiEvent.buffer[1] == 78) {
 				Voice::setFilterEnvelopeFactor(static_cast<float>(midiEvent.buffer[2]) / 70.0f);
 			}
 		}
