@@ -1,3 +1,21 @@
+/*
+    Copyright 2021 Ryszard Jezierski
+
+    This file is part of synthwave.
+    synthwave is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    synthwave is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with synthwave.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include <iostream>
 #include <csignal>
 #include <chrono>
@@ -14,7 +32,7 @@ jack_port_t* audio_out;
 
 Synthesizer* g_synthesizer;
 
-void signal_handler(int sig) 
+void signal_handler(int sig)
 {
 	jack_client_close(client);
 	exit(0);
@@ -69,10 +87,10 @@ int main(int argc, char** argv)
 	}
 	g_synthesizer = new Synthesizer(client, argv[0]);
 	jack_set_process_callback(client, process, nullptr);
-	
+
 	midi_in = jack_port_register(client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 	audio_out = jack_port_register(client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
-	
+
 	if (jack_activate(client)) {
 		std::cerr << "Cannot activate client";
 		return 1;
@@ -80,7 +98,7 @@ int main(int argc, char** argv)
 
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
-	
+
 	while (true) {
 		connect_audio_ports();
 		connect_midi_ports();
